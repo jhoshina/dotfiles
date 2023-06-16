@@ -53,10 +53,12 @@ linux*)
   ;;
 esac
 
+if type direnv > /dev/null ; then
+  eval "$(direnv hook zsh)"
+fi
 if type anyenv > /dev/null ; then
   eval "$(anyenv init -)"
 fi
-
 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
