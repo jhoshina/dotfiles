@@ -1,66 +1,60 @@
-bindkey -e
+bindkey -e  # Use Emacs keybindings
 
-autoload -U colors
-colors
+# Shell options
+setopt auto_cd       # Automatically cd into directories by typing the name
+setopt auto_pushd    # Push directory onto stack when using cd
+setopt correct       # Suggest corrections for mistyped commands
+setopt list_packed   # Show completion list in a compact horizontal layout
 
-if [[ "$PS1" != "" ]]; then
-  PROMPT=%{$terminfo[bold]%}%(!.%{$fg[red]%}.%{$fg[green]%})'%n@%m'%{$reset_color%}%{$fg[blue]%}'%(!.#.%%) '%{$reset_color%}
-  RPROMPT=%{$terminfo[bold]$fg[blue]%}'[%~]'%{$reset_color%}
-fi
-precmd() {
-  RPROMPT=%{$terminfo[bold]%(?.$fg[blue].$fg[red])%}'[%~]'%{$reset_color%}
-}
-
-autoload -Uz vcs_info
-
-zstyle ':vcs_info:*' formats '[%b]'
-zstyle ':vcs_info:*' actionformats '[%b|%a]'
-precmd () {
-  psvar=()
-  LANG=en_US.UTF-8 vcs_info
-  [[ -n "$vcs_info_msg_0_" ]] && psvar[1]="$vcs_info_msg_0_"
-}
-
-RPROMPT="%1(v|%F{green}%1v%f|)"
-
-setopt auto_cd
-
-setopt auto_pushd
-
-setopt correct
-
-setopt list_packed
-
-#setopt noautoremoveslash
-
+# History settings
 HISTFILE=$HOME/.zsh-history
 HISTSIZE=100000
 SAVEHIST=100000
-function history-all { history -E 1 }
+function history-all { history 1 }
 setopt extended_history
 setopt share_history
 
-fpath=($HOME/.zsh/functions/Completion $fpath)
-autoload -U compinit
+# If Homebrew is available, add its zsh completions
+if command -v brew >/dev/null 2>&1; then
+  fpath=($(brew --prefix)/share/zsh-completions $fpath)
+  source "$(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+fi
+
+# Setup colorized 'ls' command depending on availability and platform
+if command -v lsd >/dev/null 2>&1; then
+  alias ls='lsd'
+else
+  case "$OSTYPE" in
+    darwin*)  alias ls='ls -G' ;;            # macOS: -G enables color
+    linux*)   alias ls='ls --color=auto' ;;  # Linux: --color=auto enables color
+    *)        alias ls='ls' ;;               # fallback
+  esac
+fi
+
+# fzf integration
+if command -v fzf >/dev/null 2>&1; then
+  source <(fzf --zsh)
+fi
+
+# zoxide integration
+if command -v zoxide >/dev/null 2>&1; then
+  eval "$(zoxide init zsh)"
+fi
+
+# starship prompt
+if command -v starship >/dev/null 2>&1; then
+  eval "$(starship init zsh)"
+fi
+
+if command -v kubectl >/dev/null 2>&1; then
+  source <(kubectl completion zsh)
+fi
+
+if [[ -f "$HOME/.zshrc.local" ]]; then
+  source "$HOME/.zshrc.local"
+fi
+
+# Completion system
+autoload -Uz compinit
 compinit
-
-case "${OSTYPE}" in
-darwin*|freebsd*)
-  alias ls='ls -G'
-  ;;
-linux*)
-  alias ls='ls --color=auto'
-  ;;
-esac
-
-if type direnv > /dev/null ; then
-  eval "$(direnv hook zsh)"
-fi
-if type anyenv > /dev/null ; then
-  eval "$(anyenv init -)"
-fi
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-eval "$(starship init zsh)"
 
