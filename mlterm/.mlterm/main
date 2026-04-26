@@ -1,0 +1,14 @@
+# 背景色 (Nord0) と 前景色 (Nord4)
+bg_color=#2e3440
+fg_color=#d8dee9
+
+# カーソルの色 (Nord8)
+cursor_fg_color=#2e3440
+cursor_bg_color=#88c0d0
+
+# 高解像度ディスプレイ(DPI)対応
+# 144(150%)や192(200%)に合わせてフォントサイズを大きくします
+fontsize=14
+
+# アンチエイリアスを有効にする
+use_anti_alias=true
